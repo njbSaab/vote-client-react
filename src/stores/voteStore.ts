@@ -1,12 +1,12 @@
 // src/stores/voteStore.ts
 import { create } from 'zustand';
 
-interface PendingVote {
+export interface PendingVote {
   eventId: string;
   choice: 1 | 2 | 3;
 }
 
-interface VoteState {
+export interface VoteState {
   pendingVote: PendingVote | null;
   setPendingVote: (vote: PendingVote) => void;
   clearPendingVote: () => void;

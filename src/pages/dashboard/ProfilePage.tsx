@@ -158,7 +158,7 @@ export default function ProfilePage() {
             <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
               Доступно для голосования ({availableEvents.length})
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {availableEvents.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
@@ -172,7 +172,7 @@ export default function ProfilePage() {
             <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
               Вы проголосовали ({votedEvents.length})
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {votedEvents.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
@@ -186,7 +186,7 @@ export default function ProfilePage() {
             <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-gray-400 to-gray-600 bg-clip-text text-transparent">
               Завершённые ({endedEvents.length})
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {endedEvents.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
@@ -214,7 +214,8 @@ function EventCard({ event }: { event: Event }) {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/vote/${event.typeEventId}`);
+    // Используем числовой id вместо typeEventId
+    navigate(`/vote/${event.id}`);
   };
 
   return (

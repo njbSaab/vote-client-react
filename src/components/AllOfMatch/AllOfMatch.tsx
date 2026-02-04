@@ -6,6 +6,7 @@ import MatchCard from '@/components/ui/EventCarst/EventCart';
 import { useCarouselEvents } from '@/hooks/useCarouselEvents';
 import { VoteButton } from '../ui/VoteButton/VoteButton';
 import { useNavigate } from 'react-router-dom';
+import { useWindowSize } from '@/hooks/useWindowSize';
 
 export const AllOfMatches = () => {
   const { events: rawEvents, loading, error } = useCarouselEvents();
@@ -91,6 +92,16 @@ export const AllOfMatches = () => {
   // ← Оставляем объявление здесь, перед рендером
   const currentEvent = displayEvents[currentIndex];
 
+  const { width } = useWindowSize();
+
+  const isMobile = width <= 756;
+
+  // Динамические размеры
+  const sceneWidth = isMobile ? 320 : 520;
+  const sceneHeight = isMobile ? 220 : 350;
+  const translateZ = isMobile ? 160 : 260;
+  const perspective = isMobile ? '1200px' : '2000px';
+
   if (loading) {
     return (
       <section className="py-16 text-center">
@@ -108,28 +119,39 @@ export const AllOfMatches = () => {
   }
 
   return (
-    <section className="bg-black relative overflow-hidden py-12 md:py-16" id="all-of-matches">
+    <section className="relative overflow-hidden py-12 md:py-16" id="all-of-matches">
       <div className="container mx-auto px-4 text-center">
         <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-12 bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">
           Текущие события
         </h2>
 
-        <div className="scene mx-auto" style={{ width: '520px', height: '350px', perspective: '2000px' }}>
-          <div ref={cubeRef} className="cube w-full h-full relative" style={{ transformStyle: 'preserve-3d' }}>
-            {displayEvents.map((event, i) => (
-              <div
-                key={event.id}
-                className="cube-face absolute w-full h-full rounded-3xl overflow-hidden shadow-2xl"
-                style={{
-                  transform: `rotateY(${i * 90}deg) translateZ(260px)`,
-                  backfaceVisibility: 'hidden',
-                }}
-              >
-                <MatchCard event={event} />
-              </div>
-            ))}
+        <div 
+            className="scene mx-auto transition-all duration-300"
+            style={{ 
+              width: `${sceneWidth}px`, 
+              height: `${sceneHeight}px`, 
+              perspective: perspective 
+            }}
+          >
+            <div 
+              ref={cubeRef} 
+              className="cube w-full h-full relative" 
+              style={{ transformStyle: 'preserve-3d' }}
+            >
+              {displayEvents.map((event, i) => (
+                <div
+                  key={event.id}
+                  className="cube-face absolute w-full h-full rounded-3xl overflow-hidden shadow-2xl"
+                  style={{
+                    transform: `rotateY(${i * 90}deg) translateZ(${translateZ}px)`,
+                    backfaceVisibility: 'hidden',
+                  }}
+                >
+                  <MatchCard event={event} />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
         <div className="flex justify-center gap-4 mt-12">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -144,7 +166,7 @@ export const AllOfMatches = () => {
         </div>
 
         {currentEvent && (
-          <div className="mt-8 text-center">
+          <div className="mt-8 text-center max-w-[520px] mx-auto">
             <VoteButton onClick={handleVoteClick} disabled={!currentEvent.id}>
              {loading ? '<span class="loading loading-spinner"></span> Голосуем...' : 'Сделать прогноз'}
             </VoteButton>

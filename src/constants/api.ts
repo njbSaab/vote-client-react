@@ -1,8 +1,8 @@
 // src/constants/api.ts
 
 // Базовый URL сервера (можно вынести в .env позже)
-export const API_BASE_URL = 'http://localhost:4700';
-
+// export const API_BASE_URL = 'https://devevent.pro';
+export const API_BASE_URL = 'http://localhost:3777';
 // Эндпоинты
 export const API_ENDPOINTS = {
   // События

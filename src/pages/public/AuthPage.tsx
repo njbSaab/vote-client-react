@@ -1,18 +1,21 @@
 // src/pages/AuthPage.tsx (или LoginPage.tsx)
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { authApi, getErrorMessage } from '@/lib/api';
+import { authApi, myEventsApi, getErrorMessage } from '@/lib/api';
 import { useAuthStore } from '@/stores/authStore';
 import { useVoteStore } from '@/stores/voteStore';
 import { useCodeAttempts } from '@/hooks/useCodeAttempts';
 import toast from 'react-hot-toast';
+import SmallHeader from '../../components/shared/SmallHeader/SmallHeader';
+
 
 export default function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuthStore();
-  const { getPendingVote } = useVoteStore();
+  const { getPendingVote, clearPendingVote } = useVoteStore();
 
+  const hasShownPendingToast = useRef(false);
   // Защита от брута
   const {
     failedAttempts,
@@ -32,14 +35,23 @@ export default function AuthPage() {
   const [message, setMessage] = useState('');
 
   // Проверяем pendingVote при монтировании
-  useEffect(() => {
-    const pending = getPendingVote();
-    if (pending) {
-      console.log('AuthPage: найден pending vote', pending);
-      toast('Завершите вход, чтобы проголосовать', { icon: '🗳️' });
-    }
-  }, []);
+useEffect(() => {
+  const pending = getPendingVote();
+  if (pending && !hasShownPendingToast.current) {
+    toast('Подтведите свой выбор', {
+      icon: '🚀',
+      className: 'pending-vote-toast bg-shadow-inset-primary',   
+      style: {                            
+        padding: '16px 24px',
+        color: '#e0e7ff',
+        fontWeight: '500',
+        maxWidth: '400px',
+      },
+    });
 
+    hasShownPendingToast.current = true;
+  }
+}, []);
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -115,10 +127,23 @@ export default function AuthPage() {
       console.log('AuthPage: проверяем pending vote', pending);
       
       if (pending) {
-        // Редирект обратно на страницу голосования
-        // там сработает useEffect который отправит голос
-        console.log('AuthPage: редиректим на vote page', pending.eventId);
-        navigate(`/vote/${pending.eventId}`);
+        // Отправляем голос прямо здесь, не редиректим
+        console.log('AuthPage: отправляем pending vote', pending);
+        try {
+          const voteResult = await myEventsApi.vote(pending.eventId, pending.choice);
+          console.log('AuthPage: голос отправлен успешно', voteResult);
+          clearPendingVote();
+          toast.success('Ваш голос учтён!');
+          // Редирект на страницу результатов
+          navigate(`/profile/result/${pending.eventId}`);
+        } catch (voteErr) {
+          console.error('AuthPage: ошибка отправки голоса', voteErr);
+          const voteErrMsg = getErrorMessage(voteErr);
+          toast.error(voteErrMsg || 'Не удалось отправить голос');
+          // Всё равно редиректим на страницу голосования
+          navigate(`/vote/${pending.eventId}`);
+        }
+        return; // Важно: выходим из функции
       } else if (location.state?.from) {
         // Редирект откуда пришли
         console.log('AuthPage: редиректим откуда пришли', location.state.from);
@@ -160,36 +185,7 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-[#0a001f] to-black text-white">
       {/* Header */}
-      <header className="py-4 px-4 md:px-8 border-b border-white/10">
-        <div className="container mx-auto flex items-center justify-between">
-          <button
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            <span className="font-semibold">Назад</span>
-          </button>
-
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🗳️</span>
-            <h1 className="text-xl font-bold">VoteVibe</h1>
-          </div>
-
-          <div className="w-20"></div> {/* Spacer для центрирования */}
-        </div>
-      </header>
+      <SmallHeader />
 
       <main className="container mx-auto px-4 pt-12 md:pt-24 min-h-[85vh]">
         <div className="max-w-md mx-auto">

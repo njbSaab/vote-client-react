@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEventById } from '@/hooks/useEventById';
 import { useAuthStore } from '@/stores/authStore';
-import toast from 'react-hot-toast';
 
 export default function VoteResultPage() {
   const { id } = useParams<{ id: string }>();

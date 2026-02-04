@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import type { Event } from '@/types';
 import axios from 'axios';
+import { API_BASE_URL } from '@/constants/api';
 
 interface EventState {
   mainEvent: Event | null;
@@ -17,7 +18,7 @@ export const useEventStore = create<EventState>((set) => ({
   fetchMainEvent: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await axios.get<Event>('http://localhost:4700/events/main');
+      const response = await axios.get<Event>(`${API_BASE_URL}/events/main`);
       set({ mainEvent: response.data, loading: false });
     } catch (err) {
       set({ error: 'Не удалось загрузить событие', loading: false });

@@ -1,19 +1,20 @@
 // src/pages/VotePage.tsx
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useEventById } from '@/hooks/useEventById';
 import { useCountdown } from '@/hooks/useCountdown';
 import { useAuthStore } from '@/stores/authStore';
-import { useVoteStore } from '@/stores/voteStore';
+import { useVoteStore, type PendingVote } from '@/stores/voteStore';
 import { myEventsApi, getErrorMessage } from '@/lib/api';
 import MatchCard from '@/components/ui/EventCarst/EventCart';
 import toast from 'react-hot-toast';
+import SmallHeader from '../../components/shared/SmallHeader/SmallHeader';
+import { Spinner } from '@/components/ui/Spinners/SpinnerX';
 
 export default function VotePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // КРИТИЧНО: проверяем что id существует
   if (!id) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-black via-[#0a001f] to-black text-white">
@@ -30,6 +31,22 @@ export default function VotePage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { setPendingVote, clearPendingVote, getPendingVote } = useVoteStore();
 
+  // В начале VotePage (сразу после const { ... } = useVoteStore())
+useEffect(() => {
+  // Принудительно восстанавливаем pending из localStorage при монтировании
+  const saved = localStorage.getItem('pending_vote');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved) as PendingVote;
+      useVoteStore.setState({ pendingVote: parsed });
+      console.log('VotePage: принудительно восстановили pending из localStorage', parsed);
+    } catch (err) {
+      console.error('VotePage: ошибка парсинга pending_vote', err);
+      localStorage.removeItem('pending_vote');
+    }
+  }
+}, []); // только при первом монтировании
+
   const { event, loading, error, refetch } = useEventById(id);
 
   const countdown = useCountdown(
@@ -40,46 +57,73 @@ export default function VotePage() {
   const [selectedChoice, setSelectedChoice] = useState<1 | 2 | 3>(1);
   const [isVoting, setIsVoting] = useState(false);
 
-  // Автоматическая отправка голоса после авторизации
-  useEffect(() => {
-    const checkPendingVote = async () => {
-      if (isAuthenticated && event && !event.userAlreadyVoted) {
-        const pending = getPendingVote();
-        
-        console.log('VotePage: проверяем pending vote', { pending, eventId: id });
-        
-        if (pending && pending.eventId === id) {
-          console.log('VotePage: найден pending vote, отправляем голос');
-          // Автоматически отправляем голос
-          await submitVote(pending.eventId, pending.choice);
-          clearPendingVote();
-        }
-      }
-    };
+    const submitVote = async (eventId: string, choice: 1 | 2 | 3) => {
+  console.log('submitVote → НАЧАЛО', { eventId, choice });
 
-    checkPendingVote();
-  }, [isAuthenticated, event, id]);
+  setIsVoting(true);
 
-  const submitVote = async (eventId: string, choice: 1 | 2 | 3) => {
-    console.log('VotePage: submitVote вызван', { eventId, choice });
-    setIsVoting(true);
-    
-    try {
-      await myEventsApi.vote(eventId, choice);
-      
-      // Перезагружаем событие с обновлёнными данными
-      await refetch();
+  try {
+    const res = await myEventsApi.vote(eventId, choice);
+    console.log('submitVote → УСПЕХ', res);
 
-      // Редирект на страницу результатов
-      navigate(`/profile/result/${eventId}`);
-    } catch (error) {
-      const errorMsg = getErrorMessage(error);
-      console.error('VotePage: ошибка голосования', error);
-      toast.error(errorMsg);
-    } finally {
+    await refetch();
+    console.log('submitVote → событие перезагружено');
+
+    navigate(`/profile/result/${eventId}`);
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    console.error('submitVote → ОШИБКА', error, msg);
+    toast.error(msg || 'Не удалось отправить голос');
+  } finally {
+    setIsVoting(false);
+  }
+};
+
+// Ref для предотвращения повторной отправки
+const pendingVoteSubmittedRef = useRef(false);
+
+useEffect(() => {
+  console.log('VotePage: useEffect для pending vote', {
+    isAuthenticated,
+    loading,
+    hasEvent: !!event,
+    userAlreadyVoted: event?.userAlreadyVoted,
+    pendingVoteSubmitted: pendingVoteSubmittedRef.current
+  });
+
+  if (!isAuthenticated || loading || !event || event.userAlreadyVoted) return;
+  if (pendingVoteSubmittedRef.current) return; // Уже отправляем
+
+  const pending = getPendingVote();
+  console.log('VotePage: pending vote из store', pending);
+  
+  if (!pending || pending.eventId !== id) return;
+
+  console.log('VotePage: ОТПРАВЛЯЕМ ОТЛОЖЕННЫЙ ГОЛОС!', pending);
+  pendingVoteSubmittedRef.current = true; // Помечаем что начали отправку
+
+  // Отправляем голос напрямую через API
+  setIsVoting(true);
+  myEventsApi.vote(pending.eventId, pending.choice)
+    .then((res) => {
+      console.log('VotePage: отложенный голос отправлен успешно', res);
+      clearPendingVote();
+      return refetch();
+    })
+    .then(() => {
+      console.log('VotePage: событие перезагружено после отложенного голоса');
+      navigate(`/profile/result/${pending.eventId}`);
+    })
+    .catch((err) => {
+      console.error('VotePage: ошибка отправки отложенного голоса', err);
+      const msg = getErrorMessage(err);
+      toast.error(msg || 'Не удалось отправить голос');
+      pendingVoteSubmittedRef.current = false; // Сбрасываем чтобы можно было повторить
+    })
+    .finally(() => {
       setIsVoting(false);
-    }
-  };
+    });
+}, [isAuthenticated, loading, event, id, getPendingVote, clearPendingVote, refetch, navigate]);
 
   const handleVote = async () => {
     if (!event || timer.expired || event.userAlreadyVoted) {
@@ -118,7 +162,7 @@ export default function VotePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-black via-[#0a001f] to-black">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
+          <Spinner size="sm" className="loaderM" />
       </div>
     );
   }
@@ -146,41 +190,10 @@ export default function VotePage() {
     : 'Голосовать';
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-[#0a001f] to-black text-white">
+    <div className="min-h-screen flex items-center justify-center pt-[35px] bg-gradient-to-b from-black via-[#0a001f] to-black text-white">
       {/* Header */}
-      <header className="py-4 px-4 md:px-8 border-b border-white/10">
-        <div className="container mx-auto flex items-center justify-between">
-          <button
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            <span className="font-semibold">Назад</span>
-          </button>
-
-          {isAuthenticated && (
-            <button
-              onClick={() => navigate('/profile')}
-              className="text-blue-400 hover:text-blue-300 font-semibold transition-colors"
-            >
-              Профиль →
-            </button>
-          )}
-        </div>
-      </header>
-
+      <SmallHeader />
+      
       <main className="container mx-auto px-4 pt-8 min-h-[80vh]">
         <div className="max-w-[600px] mx-auto">
           <MatchCard event={event} />

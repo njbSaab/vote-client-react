@@ -28,15 +28,42 @@ body{
         @apply mt-4 text-lg md:text-2xl text-center text-white/80;
     }
 }
-.bg-gradient-main{
-  background: linear-gradient(90deg, #0011FF 0%, #FF0000 100%);
+.bg-gradient-main {
+  background: linear-gradient(180deg, #000000 0%, #0a001f 50%, #000000 100%);
+  /* или любой другой градиент, который ты используешь */
+}
+.bg-gradient-main-accent {
+    background: linear-gradient(90deg, #0011FF 0%, #FF0000 100%);
 }
 .hover-gradient{
   transition: all .3s ease-in;
-  &::hover{
+  &:hover{
     background: linear-gradient(90deg, #0011FF 0%, #FF0000 100%);
     transition: all .3s ease-in;
   }
+}
+.drawer-content.color-full-gradient {
+  position: relative;
+  overflow: hidden;
+}
+.drawer-content.color-full-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, rgba(0, 0, 255, 0.4), rgba(0, 0, 255, 0.3), rgba(255, 0, 0, 0.2), rgba(255, 0, 0, .4), rgba(0, 0, 255, 0.4));
+  background-size: 400%;
+  animation: animate-gradient 18s linear infinite;
+  transition: 0.5s;
+}
+.footer.bg-gradient-main-accent{
+  background: linear-gradient(90deg, rgba(0, 0, 255, 1), rgba(0, 0, 255, 0.535), rgba(255, 0, 0, 0.508), rgba(255, 0, 0, 1), rgba(0, 0, 255, 1));
+  background-size: 400%;
+  animation: animate-gradient 18s linear infinite;
+  transition: 0.5s;
 }
 .hover-red{
   transition: .3s ease-in;
@@ -158,9 +185,9 @@ body{
 /** btn-anim */
 .btn.btn-gradient-hover{
     padding: 10px 40px;
-    font-size: 18px;
+    font-size: 35px;
     font-weight: 600;
-    height: 60px;
+    height: 80px;
 }
 .btn-gradient-hover {
     position: relative;
@@ -199,6 +226,47 @@ body{
     opacity: 1;
     animation: animate-gradient 8s linear infinite;
   }
+.loader-box{
+  position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+}
+ .loaderM {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  background: linear-gradient(0deg, rgba(255, 61, 0, 0.2) 33%, #ff3d00 100%);
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+.loaderM::after {
+  content: '';  
+  box-sizing: border-box;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  height: 90%;
+  border-radius: 50%;
+  background: #0a001f;
+  /* background: #263238; */
+  /* background: rgba(0, 0, 255, 1); */
+}
+.pending-vote-toast{
+  box-shadow: inset 0 0 10px rgba(0, 0, 255, 0.5) !important;
+  background: linear-gradient(90deg, rgba(0, 0, 255, 1), rgba(255, 0, 0, 1)) !important;
+  border: none !important;
+}
+
+@keyframes rotation {
+  0% { transform: rotate(0deg) }
+  100% { transform: rotate(360deg)}
+} 
+
   @keyframes animate-gradient {
     0% {
       background-position: 0%;
@@ -216,7 +284,7 @@ body{
         font-size: 16px;
       }
   }
- 
+
   .scale-anim {
     animation: scaling 2s infinite ease-in-out;
   }
@@ -473,6 +541,34 @@ body{
   }
 }
 
+@media (max-width: 480px) {
+  .btn.btn-gradient-hover{
+    font-size: 25px;
+    height: 60px;
+  }
+  #main-prize.py-12,
+  #how-it-work.py-12,
+  #all-of-matches.py-12 {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+  #faq.mb-8{
+    margin-bottom: 0;
+  }
+  #faq .collapse-content p{
+    font-size: 18px;
+    line-height: 1.2;
+  }
+  .scene .team-vs{
+    font-size: 30px;
+  }
+  .scene-wrapper{
+    gap: 20px !important;
+  }
+  .scene {
+   height: 230px !important;
+  }
+}
 /* Свечение для активной точки */
 .shadow-glow {
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
@@ -497,4 +593,106 @@ body{
 }
 .text-shadow-primary {
   text-shadow: 0 0 10px white, 0 0 20px blue;
+}
+
+.bg-shadow-inset {
+  border-radius: 30px 0 0 30px;
+  backdrop-filter: blur(15px);
+  box-shadow: inset 0 0 10px rgba(0, 0, 255, 0.5);
+	background: linear-gradient(180deg, #00000049 -17.54%, #000000c0 114.47%);
+}
+
+
+.drawer-side {
+	> .drawer-overlay {
+		position: sticky;
+		top: calc(0.25rem * 0);
+		cursor: pointer;
+		place-self: stretch;
+		background-color: transparent;
+	}
+}
+
+.hover-gradient {
+  transition: all 0.3s ease-in;
+}
+
+.hover-gradient:hover {
+  background: linear-gradient(90deg, #0011FF 0%, #FF0000 100%);
+}
+
+.login-btn:active {
+  scale: 0.9;
+  transition: all 0.3s ease-in;
+}
+
+/* Hover эффекты для пунктов меню */
+.hover-red:hover,
+.nav-link:hover {
+  background: rgba(255, 0, 0, 0.15) !important;
+}
+
+.hover-blue:hover {
+  background: rgba(0, 100, 255, 0.15) !important;
+}
+
+.hover-white:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Активный пункт */
+.active {
+  background: linear-gradient(90deg, #0011ffc0 0%, #ff0000bd 100%);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+}
+
+.footer {
+  border-radius: 30px;
+  /* margin-bottom: 10px; */
+  width: calc(100% - 6rem);
+}
+
+/* Соцсети */
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  padding: 8px;
+}
+
+.social-link:hover {
+  transform: translateY(-6px) scale(1.1);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(90deg, #0011ffc0 0%, #ff0000bd 100%);
+}
+
+.social-link {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.social-link:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Мобильная адаптация ширины футера */
+@media (max-width: 768px) {
+  footer.container {
+    width: calc(100% - 1rem);
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+  }
 }

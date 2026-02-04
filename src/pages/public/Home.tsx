@@ -4,6 +4,8 @@ import { FAQ } from '@/components/FAQ/FAQ';
 import { HowItWorks } from '@/components/HowItWork/HowItWork';
 import { MainEvent } from '@/components/MainEvent/MainEvent';
 import { MainPrize } from '@/components/MainPrize/MainPrize';
+import Footer from '@/components/shared/Footer/Footer';
+import Header from '@/components/shared/Header/Header';
 import { useEventStore } from '@/stores/eventStore';
 import { useEffect } from 'react';
 
@@ -15,12 +17,14 @@ export default function Home() {
   }, [mainEvent, fetchMainEvent]);
 
   return (
-    <div className="bg-gradient-to-b from-black via-[#0a001f] to-black text-white min-h-screen">
+    <div className="bg-gradient-main text-white min-h-screen">
+      <Header />
       <MainEvent />
       <MainPrize event={mainEvent} /> 
       <HowItWorks />
       <AllOfMatches />
       <FAQ />
-    </div>
+      <Footer/>
+      </div>
   );
 }

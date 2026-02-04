@@ -20,7 +20,7 @@ const faqItems = [
 
 export const FAQ = () => {
   return (
-    <section className="faq bg-gradient-to-b from-black/90 to-[#0a001f] relative overflow-hidden" id="faq">
+    <section className="faq relative overflow-hidden mb-8 pb-8" id="faq">
       <div className="container mx-auto px-4">
         {/* Заголовок */}
         <h2 className="text-center text-4xl md:text-5xl lg:text-6xl font-extrabold mb-12 bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">

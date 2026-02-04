@@ -98,9 +98,9 @@ export const eventsApi = {
     return response.data;
   },
 
-  // Одно публичное событие по typeEventId
-  getPublicEvent: async (typeEventId: string): Promise<Event> => {
-    const response = await api.get(`/events/${typeEventId}`);
+  // Одно публичное событие по id (числовой или строковый typeEventId)
+  getPublicEvent: async (id: string | number): Promise<Event> => {
+    const response = await api.get(`/events/${id}`);
     return response.data;
   },
 };
@@ -116,9 +116,9 @@ export const myEventsApi = {
     return response.data;
   },
 
-  // Одно моё событие по typeEventId
-  getMyEvent: async (typeEventId: string): Promise<Event> => {
-    const response = await api.get(`/events/me/${typeEventId}`);
+  // Одно моё событие по id (числовой или строковый typeEventId)
+  getMyEvent: async (id: string | number): Promise<Event> => {
+    const response = await api.get(`/events/me/${id}`);
     return response.data;
   },
 
@@ -128,12 +128,12 @@ export const myEventsApi = {
     return response.data;
   },
 
-  // Голосование
+  // Голосование по id (числовой или строковый typeEventId)
   vote: async (
-    typeEventId: string,
+    id: string | number,
     choice: 1 | 2 | 3
   ): Promise<{ success: boolean }> => {
-    const response = await api.post(`/events/${typeEventId}/vote`, { choice });
+    const response = await api.post(`/events/${id}/vote`, { choice });
     return response.data;
   },
 };

@@ -17,8 +17,8 @@ export const VoteButton = ({
       onClick={onClick}
       disabled={disabled}
       className={`
+        w-full
         btn btn-gradient-hover
-        text-2xl 
         transition-all duration-300 
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         ${className}
